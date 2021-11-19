@@ -6,7 +6,7 @@ class LexAnalyzer(Lexer):
               DIVIDE, DOUBLEE, EQUAL, LPAREN, RPAREN, LBRACE,
               RBRACE, LBLOCK, RBLOCK, LTE, GTE, LT, GT,
               NOTE, AND, OR, COMMENT, IF, ELSE, ELSEIF, WHILE,
-              FOR, INTEGER, FLOAT, NEWLINE
+              FOR, INTEGER, FLOAT, NEWLINE, PLOT
               }
 
     # String containing ignored characters between tokens
@@ -54,6 +54,8 @@ class LexAnalyzer(Lexer):
     ID['rt']    = MATHFUNC
     ID['ln']    = MATHFUNC
     ID['angle'] = MATHFUNC
+    ID['abs']   = MATHFUNC
+    ID['plot] = PLOT
     
     @_(r'\d+')
     def INTEGER(self, t):
