@@ -39,7 +39,22 @@ class LexAnalyzer(Lexer):
     ID['elseif'] = ELSEIF
     ID['while'] = WHILE
     ID['for'] = FOR
-
+    ID['sin']   = MATHFUNC
+    ID['cos']   = MATHFUNC
+    ID['tan']   = MATHFUNC
+    ID['asin']  = MATHFUNC
+    ID['acos']  = MATHFUNC
+    ID['atan']  = MATHFUNC
+    ID['sind']  = MATHFUNC
+    ID['cosd']  = MATHFUNC
+    ID['tand']  = MATHFUNC
+    ID['asind'] = MATHFUNC
+    ID['acosd'] = MATHFUNC
+    ID['atand'] = MATHFUNC
+    ID['rt']    = MATHFUNC
+    ID['ln']    = MATHFUNC
+    ID['angle'] = MATHFUNC
+    
     @_(r'\d+')
     def INTEGER(self, t):
       t.value = int(t.value)
