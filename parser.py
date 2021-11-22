@@ -1,11 +1,14 @@
 from sly import Parser
+from numpy import np
+from termcolor import colored
 from lex import LexAnalyzer
 import math
 
-class GeckoParser(Parser):
+
+class NParser(Parser):
     # debugfile = 'parser.out'
 
-    tokens = GeckoLexer.tokens
+    tokens = LexAnalyzer.tokens
 
     precedence = (
         ('right', CROCANTE),
@@ -46,14 +49,21 @@ class GeckoParser(Parser):
     }
 
     binops = {
-        '+': lambda x,y: x+y,
-        '-': lambda x,y: x-y,
-        '*': lambda x,y: x*y,
-        '/': lambda x,y: x/y,
-        '^': lambda x,y: x**y,
-        '%': lambda x,y: x%y,
+        '+': lambda x, y: x + y,
+        '-': lambda x, y: x - y,
+        '*': lambda x, y: x * y,
+        '/': lambda x, y: x / y,
+        '^': lambda x, y: x ** y,
+        '%': lambda x, y: x % y,
     }
 
 
-
-
+def REPL(lexer, parser):
+    while True:
+        try:
+            print(colored('\nnetsie> ', 'yellow', attrs=['bold']), end='')
+            text = input()
+        except EOFError:
+            break
+        if text:
+            parser.parse(lexer.tokenize(text))
