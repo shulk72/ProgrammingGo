@@ -1,12 +1,14 @@
 from sly import Lexer
-
+import numpy as np
 
 class LexAnalyzer(Lexer):
     tokens = {ID, PLUS, MINUS, TIMES,
               DIVIDE, DOUBLEE, EQUAL, LPAREN, RPAREN, LBRACE,
               RBRACE, LBLOCK, RBLOCK, LTE, GTE, LT, GT,
               NOTE, AND, OR, COMMENT, IF, ELSE, ELSEIF, WHILE,
-              FOR, INTEGER, FLOAT, NEWLINE, PLOT, MATHFUNC
+              FOR, INTEGER, FLOAT, NEWLINE, PLOT, MATHFUNC, POW, NUMBER, STRING, TITLE, MOD,
+              ASSIGN, TICK, SEMI, COMMA, PIPE, CROCANTE, AT, DEGSYM, THEN, WITH, POLAR, CALC, EXIT,
+              SEMI, VARS, NEW, INT, FROM, TO, NEWLINE, AS, DIV
               }
 
     # String containing ignored characters between tokens
@@ -15,6 +17,7 @@ class LexAnalyzer(Lexer):
     # Regular expression rules for tokens
     ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
     PLUS = r'\+'
+    POW = r'\^'
     MINUS = r'-'
     TIMES = r'\*'
     DIVIDE = r'/'
@@ -34,6 +37,19 @@ class LexAnalyzer(Lexer):
     AND = r'\&'
     OR = r'\|'
     COMMENT = r'\#.*'
+    NUMBER = r'([0-9]*[.])?[0-9]+(e\-?[1-9][0-9]*)?'
+    STRING = r'("[^\"]*")'
+    TITLE = r'\#.*'
+    MOD = r'%'
+    ASSIGN = r'='
+    NEWLINE = r'\n'
+    TICK = r"'"
+    SEMI = r';'
+    COMMA = r','
+    PIPE = r'\|'
+    CROCANTE = r'\$'
+    AT = r'@'
+    DEGSYM = r'<'
     ID['if'] = IF
     ID['else']= ELSE
     ID['elseif'] = ELSEIF
@@ -56,6 +72,7 @@ class LexAnalyzer(Lexer):
     ID['angle'] = MATHFUNC
     ID['abs']   = MATHFUNC
     ID['plot'] = PLOT
+
     
     @_(r'\d+')
     def INTEGER(self, t):
