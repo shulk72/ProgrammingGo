@@ -6,8 +6,8 @@ class LexAnalyzer(Lexer):
               DIVIDE, DOUBLEE, EQUAL, LPAREN, RPAREN, LBRACE,
               RBRACE, LBLOCK, RBLOCK, LTE, GTE, LT, GT,
               NOTE, AND, OR, COMMENT, IF, ELSE, ELSEIF, WHILE,
-              FOR, INTEGER, FLOAT, NEWLINE, PLOT, MATHFUNC,MEDIAN,MEAN
-              ,MODE
+              FOR, INTEGER, FLOAT, NEWLINE, PLOT, MATHFUNC, MEDIAN, MEAN,
+              MODE
               }
 
     # String containing ignored characters between tokens
