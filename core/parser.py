@@ -1,16 +1,14 @@
-from sly import Parser
-import numpy as np
-from termcolor import colored
-from core.lex import LexAnalyzer
 import math
-import statistics
-from core.settings import *
+import numpy as np
+# import matplotlib.pyplot as plt
+from sly import Parser
+from termcolor import colored
+from lex import LexAnalyzer
+from settings import *
+from scipy.integrate import quad
+
 
 class NParser(Parser):
-
-
-        # debugfile = 'parser.out'
-
     tokens = LexAnalyzer.tokens
 
     precedence = (
@@ -28,6 +26,8 @@ class NParser(Parser):
         ('right', POW),
         ('nonassoc', NUMBER),
         ('nonassoc', AT, DEGSYM),
+        ('left', IF),
+        ('left', EQUALS)
     )
 
     mathfuncs = {
@@ -50,11 +50,6 @@ class NParser(Parser):
         "deg": math.degrees,
         "rad": math.radians,
     }
-    statsfuncs = {
-        "mode" : statistics.mode,
-        "mean" : statistics.mean,
-        "median" :statistics.median
-    }
 
     binops = {
         '+': lambda x, y: x + y,
@@ -73,8 +68,7 @@ class NParser(Parser):
             "j": [('number', 1j), 1j]
         }
         self.funcs = {
-            'j': (['x'], ('binop', '*', ('number', 1j), ('id-lookup', 'x')))
-        }
+            'j': (['x'], ('binop', '*', ('number', 1j), ('id-lookup', 'x')))}
         self.mathconsts = list(self.ids.keys())
         self.printed_ids = []
         self.ans = 0
@@ -157,15 +151,6 @@ class NParser(Parser):
                 if func == 'rt' and val < 0:
                     return math.sqrt(-val) * 1j
                 return self.mathfuncs[func](val)
-            except:
-                print(f"{tab}Function {func} domain error (used val = {val})")
-                return 0
-        elif op == 'statsfunc':
-            #TODO
-            val =[self.eval_tree(tree[3],ctx)] #to review
-            func = tree[2]
-            try:
-                return self.statsfuncs[func](val)
             except:
                 print(f"{tab}Function {func} domain error (used val = {val})")
                 return 0
@@ -274,14 +259,12 @@ class NParser(Parser):
     def statement(self, p):
         exit()
 
-    @_('TITLE')
-    def statement(self, p):
-        # Reserved for future use
-        ...
 
-    @_('expr', 'expr TITLE')
+
+    @_('expr')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
+
         if p.expr[0] in ['nop']:
             pass
         else:
@@ -290,6 +273,7 @@ class NParser(Parser):
 
         # return self.eval_tree(('tree',p.expr))
         return p.expr
+
 
     # ben=14, a=b=c=3, no return value, this isnt an expression!
     @_('ids_assign expr')
@@ -303,25 +287,6 @@ class NParser(Parser):
             self.printed_ids = []
             self.ids[_id] = [p.expr, self.eval_tree(p.expr)]
             self.pprint_final(_id, self.ids[_id][1])
-    #TODO
-        
-    # list
-    @_('ID LBRACE RBRACE')
-    def statement(self, p):
-        p = []
-        print("This is a list",p)
-        return p
-    @_('ID LBRACE expr RBRACE')
-    def statement(self,p):
-        p = [p.expr]
-        print("List with elements",p)
-        return p
-
-    @_('ID LBRACE exprs RBRACE')
-    def statement(self, p):
-        p = [*p.exprs]
-        print("List multiple elements")
-        return p
 
     # Function declaration/definition
     @_('func_shape ASSIGN expr')
@@ -346,20 +311,6 @@ class NParser(Parser):
             tree = self.ids[p.ID][0]
             self.ids[p.ID][1] = self.eval_tree(tree)
             self.pprint_final(p.ID, self.ids[p.ID][1])
-
-    @_('POLAR expr',
-       'expr POLAR')
-    def statement(self, p):
-        num = self.eval_tree(p.expr)
-        self.ans = num
-        if num.imag == 0:
-            print(self.pprint_num(num))
-        else:
-            norm = colored(self.pprint_num(abs(num)), 'white', attrs=['bold'])
-            phase = colored(f'{self.pprint_num(np.angle(num))} rad', 'white', attrs=['bold'])
-            phase_deg = self.pprint_num(math.degrees(np.angle(num)))
-            print(f"{tab}{norm} {colored('@', 'green')} {phase} ({phase_deg} deg)")
-        return p.expr
 
     @_('PLOT expr FROM expr TO expr',
        'PLOT expr FROM expr TO expr AS ID',
@@ -396,13 +347,19 @@ class NParser(Parser):
         else:
             print(tab + colored('No initialized variables', 'white', attrs=['bold']))
 
-    # Deletes all variables
-    @_('NEW')
-    def statement(self, p):
-        self.__init__()
 
-    ### EXPR ###
+
+        ### EXPR ###
+
     # Everything that can be evaluated. Upon any error evaluates to 0.
+
+    @_('expr EQUALS expr')
+    def expr(self, p):
+        return (p[0] == p[2])
+
+    @_('IF expr')
+    def expr(self, p):
+        pass
 
     @_('expr PLUS expr',
        'expr MINUS expr',
@@ -449,6 +406,7 @@ class NParser(Parser):
 
     @_('INT expr FROM expr TO expr %prec INTEGRAL')
     def expr(self, p):
+        print('passed')
         return ('integrate', p.expr0, p.expr1, p.expr2)
 
     # good ol' haskell curry
@@ -520,10 +478,6 @@ class NParser(Parser):
     def mini_term(self, p):
         return ('mathfunc', p.MATHFUNC, p.expr)
 
-    @_('STATSFUNC LPAREN expr RPAREN')
-    def mini_term(self, p):
-        return ('statsfunc', p.STATSFUNC, p.expr)
-
     @_('func_shape')
     def mini_term(self, p):
         name, args = p.func_shape
@@ -532,6 +486,7 @@ class NParser(Parser):
     @_('LPAREN expr RPAREN')
     def mini_term(self, p):
         return ('group', p.expr)
+
 
 ########## END OF PARSER CLASS ##########
 
