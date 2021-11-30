@@ -1,15 +1,14 @@
-from sly import Parser
+import math
 import numpy as np
+# import matplotlib.pyplot as plt
+from sly import Parser
 from termcolor import colored
 from lex import LexAnalyzer
-import math
 from settings import *
+from scipy.integrate import quad
+
 
 class NParser(Parser):
-
-
-        # debugfile = 'parser.out'
-
     tokens = LexAnalyzer.tokens
 
     precedence = (
@@ -27,6 +26,8 @@ class NParser(Parser):
         ('right', POW),
         ('nonassoc', NUMBER),
         ('nonassoc', AT, DEGSYM),
+        ('left', IF),
+        ('left', EQUALS)
     )
 
     mathfuncs = {
@@ -67,8 +68,7 @@ class NParser(Parser):
             "j": [('number', 1j), 1j]
         }
         self.funcs = {
-            'j': (['x'], ('binop', '*', ('number', 1j), ('id-lookup', 'x')))
-        }
+            'j': (['x'], ('binop', '*', ('number', 1j), ('id-lookup', 'x')))}
         self.mathconsts = list(self.ids.keys())
         self.printed_ids = []
         self.ans = 0
@@ -259,14 +259,12 @@ class NParser(Parser):
     def statement(self, p):
         exit()
 
-    @_('TITLE')
-    def statement(self, p):
-        # Reserved for future use
-        ...
 
-    @_('expr', 'expr TITLE')
+
+    @_('expr')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
+
         if p.expr[0] in ['nop']:
             pass
         else:
@@ -275,6 +273,7 @@ class NParser(Parser):
 
         # return self.eval_tree(('tree',p.expr))
         return p.expr
+
 
     # ben=14, a=b=c=3, no return value, this isnt an expression!
     @_('ids_assign expr')
@@ -313,20 +312,6 @@ class NParser(Parser):
             self.ids[p.ID][1] = self.eval_tree(tree)
             self.pprint_final(p.ID, self.ids[p.ID][1])
 
-    @_('POLAR expr',
-       'expr POLAR')
-    def statement(self, p):
-        num = self.eval_tree(p.expr)
-        self.ans = num
-        if num.imag == 0:
-            print(self.pprint_num(num))
-        else:
-            norm = colored(self.pprint_num(abs(num)), 'white', attrs=['bold'])
-            phase = colored(f'{self.pprint_num(np.angle(num))} rad', 'white', attrs=['bold'])
-            phase_deg = self.pprint_num(math.degrees(np.angle(num)))
-            print(f"{tab}{norm} {colored('@', 'green')} {phase} ({phase_deg} deg)")
-        return p.expr
-
     @_('PLOT expr FROM expr TO expr',
        'PLOT expr FROM expr TO expr AS ID',
        'PLOT expr FROM expr TO expr AS STRING')
@@ -362,13 +347,19 @@ class NParser(Parser):
         else:
             print(tab + colored('No initialized variables', 'white', attrs=['bold']))
 
-    # Deletes all variables
-    @_('NEW')
-    def statement(self, p):
-        self.__init__()
 
-    ### EXPR ###
+
+        ### EXPR ###
+
     # Everything that can be evaluated. Upon any error evaluates to 0.
+
+    @_('expr EQUALS expr')
+    def expr(self, p):
+        return (p[0] == p[2])
+
+    @_('IF expr')
+    def expr(self, p):
+        pass
 
     @_('expr PLUS expr',
        'expr MINUS expr',
@@ -415,6 +406,7 @@ class NParser(Parser):
 
     @_('INT expr FROM expr TO expr %prec INTEGRAL')
     def expr(self, p):
+        print('passed')
         return ('integrate', p.expr0, p.expr1, p.expr2)
 
     # good ol' haskell curry
@@ -494,6 +486,7 @@ class NParser(Parser):
     @_('LPAREN expr RPAREN')
     def mini_term(self, p):
         return ('group', p.expr)
+
 
 ########## END OF PARSER CLASS ##########
 
