@@ -208,8 +208,6 @@ class NParser(Parser):
 
     ####### Grammar #######
 
-
-
     @_('statements NEWLINE statement',
        'statements SEMI statement')
     def statements(self, p):
@@ -220,12 +218,8 @@ class NParser(Parser):
         self.printed_ids = []
         return p.statement
 
-    ### Structural rules stuff (kinda in-between non-terminals for other non-terminals)
+    ### Structural rules stuff
 
-    ## Functions stuff ## for definitions and calls
-    # FUNC_NAME ( ARGS ) -> just that
-    # args are 'exprs' because this is used both for
-    # function definitions and for function calls
     @_('ID LPAREN exprs expr RPAREN')
     def func_shape(self, p):
         return p.ID, [*p.exprs, p.expr]
@@ -261,7 +255,6 @@ class NParser(Parser):
 
     @_('expr')
     def statement(self, p):
-        # print(p.expr) # cheap debug xd
         try:
             if p.expr[0] in ['nop']:
                 pass
@@ -339,24 +332,30 @@ class NParser(Parser):
         if (len(self.ids) > 0) and not (len(self.mathconsts) == len(self.ids)):
             print(tab + colored('Vars:', 'white', attrs=['bold']))
             # Longest ID + escape sequences for color + 1
-            padding = len(max(self.ids.keys(), key=len)) + 8 + 1
+            pad = len(max(self.ids.keys(), key=len)) + 8 + 1
             for var in sorted(self.ids.keys()):
                 if var not in self.mathconsts:
-                    print(f"{tab * 2}{colored(var, VAR_COLOR):{padding}} = {self.pprint_num(self.ids[var][1])}")
+                    print(f"{tab * 2}{colored(var, VAR_COLOR):{pad}} = {self.pprint_num(self.ids[var][1])}")
         else:
             print(tab + colored('No initialized variables', 'white', attrs=['bold']))
 
-    # list
     @_('ID LBRACE RBRACE')
     def statement(self, p):
-        p = []
-        print("This is a list", p)
-        return p
+        l = list()
+        print(f"List with {len(l)} elements", l)
 
     @_('ID LBRACE expr RBRACE')
     def statement(self, p):
-        l = [p.expr[1]]
-        print("List with elements", l)
+        l = list()
+        if len(p.expr) > 2:
+            for i in range(1, len(p.expr)):
+                if len(p.expr[i]) > 1:
+                    l.append(p.expr[i][1])
+                else:
+                    l.append(p.expr[i])
+        else:
+            l.append(p.expr)
+        print(f"List with {len(l)} elements", l)
         return l
 
         ### EXPR ###
@@ -390,6 +389,7 @@ class NParser(Parser):
     @_('NUMBER')
     def expr(self, p):
         return ('number', float(p.NUMBER))
+
 
     @_('NUMBER AT expr')
     def expr(self, p):

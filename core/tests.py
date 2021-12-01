@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser = NParser()
 
     tests = [
-        # Last expression is called twice, keep in mind if you're testing 'ans' stuff
+        ("a[1+1]", ['+', 1.0, 1.0]),
         ("-4+5^2*10/2-2* 2+2", -4+5**2*10/2-2* 2+2),
         ("x=10; -2x^3", -2000),
         ("x=10; (-2x)^3", (-20)**3),
