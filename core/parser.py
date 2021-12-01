@@ -544,3 +544,5 @@ def REPL(lexer, parser):
             break
         if text:
             parser.parse(lexer.tokenize(text))
+            # for tok in lexer.tokenize(text):
+            #     print('type=%r, value=%r' % (tok.type, tok.value))

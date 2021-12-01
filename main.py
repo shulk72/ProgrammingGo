@@ -1,5 +1,6 @@
-from lex import LexAnalyzer
-from parser import NParser, REPL
+from core.lex import LexAnalyzer
+from core.parser import NParser, REPL
+
 
 if __name__ == '__main__':
     lexer = LexAnalyzer()
