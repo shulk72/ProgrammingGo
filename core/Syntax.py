@@ -1,5 +1,4 @@
 from sly import Parser
-from lex import LexAnalyzer
 import math
 
 class GeckoParser(Parser):
