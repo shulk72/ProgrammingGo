@@ -1,9 +1,10 @@
 from sly import Parser
 import numpy as np
 from termcolor import colored
-from lex import LexAnalyzer
+from core.lex import LexAnalyzer
 import math
-from settings import *
+import statistics
+from core.settings import *
 
 class NParser(Parser):
 
@@ -48,6 +49,11 @@ class NParser(Parser):
         "abs": abs,
         "deg": math.degrees,
         "rad": math.radians,
+    }
+    statsfuncs = {
+        "mode" : statistics.mode,
+        "mean" : statistics.mean,
+        "median" :statistics.median
     }
 
     binops = {
@@ -151,6 +157,15 @@ class NParser(Parser):
                 if func == 'rt' and val < 0:
                     return math.sqrt(-val) * 1j
                 return self.mathfuncs[func](val)
+            except:
+                print(f"{tab}Function {func} domain error (used val = {val})")
+                return 0
+        elif op == 'statsfunc':
+            #TODO
+            val =[self.eval_tree(tree[3],ctx)] #to review
+            func = tree[2]
+            try:
+                return self.statsfuncs[func](val)
             except:
                 print(f"{tab}Function {func} domain error (used val = {val})")
                 return 0
@@ -288,6 +303,25 @@ class NParser(Parser):
             self.printed_ids = []
             self.ids[_id] = [p.expr, self.eval_tree(p.expr)]
             self.pprint_final(_id, self.ids[_id][1])
+    #TODO
+        
+    # list
+    @_('ID LBRACE RBRACE')
+    def statement(self, p):
+        p = []
+        print("This is a list",p)
+        return p
+    @_('ID LBRACE expr RBRACE')
+    def statement(self,p):
+        p = [p.expr]
+        print("List with elements",p)
+        return p
+
+    @_('ID LBRACE exprs RBRACE')
+    def statement(self, p):
+        p = [*p.exprs]
+        print("List multiple elements")
+        return p
 
     # Function declaration/definition
     @_('func_shape ASSIGN expr')
@@ -485,6 +519,10 @@ class NParser(Parser):
     @_('MATHFUNC LPAREN expr RPAREN')
     def mini_term(self, p):
         return ('mathfunc', p.MATHFUNC, p.expr)
+
+    @_('STATSFUNC LPAREN expr RPAREN')
+    def mini_term(self, p):
+        return ('statsfunc', p.STATSFUNC, p.expr)
 
     @_('func_shape')
     def mini_term(self, p):
