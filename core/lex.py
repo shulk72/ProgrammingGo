@@ -6,7 +6,7 @@ import numpy as np
 
 
 class LexAnalyzer(Lexer):
-    tokens = {ID, PLUS, MINUS, TIMES, IF, EQUALS, DIV,
+    tokens = {ID, PLUS, MINUS, TIMES, IF, EQUALS, DIV, LBRACE, RBRACE,
               LPAREN, RPAREN, NEWLINE, PLOT, MATHFUNC, POW, NUMBER, STRING, MOD,
               ASSIGN, TICK, SEMI, COMMA, PIPE, CROCANTE, AT, DEGSYM, THEN, WITH, CALC, EXIT,
               SEMI, VARS, INT, FROM, TO, NEWLINE, AS, DIV
@@ -24,6 +24,8 @@ class LexAnalyzer(Lexer):
     TIMES = r'\*'
     LPAREN = r'\('
     RPAREN = r'\)'
+    LBRACE = r'\['
+    RBRACE = r'\]'
     NUMBER = r'([0-9]*[.])?[0-9]+(e\-?[1-9][0-9]*)?'
     STRING = r'("[^\"]*")'
     MOD = r'%'

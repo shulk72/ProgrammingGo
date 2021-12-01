@@ -1,6 +1,6 @@
 import math
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib as plt
 from sly import Parser
 from termcolor import colored
 from lex import LexAnalyzer
@@ -26,8 +26,8 @@ class NParser(Parser):
         ('right', POW),
         ('nonassoc', NUMBER),
         ('nonassoc', AT, DEGSYM),
+        ('left', EQUALS),
         ('left', IF),
-        ('left', EQUALS)
     )
 
     mathfuncs = {
@@ -208,7 +208,7 @@ class NParser(Parser):
 
     ####### Grammar #######
 
-    # yadda yadda root and recursion
+
 
     @_('statements NEWLINE statement',
        'statements SEMI statement')
@@ -259,21 +259,20 @@ class NParser(Parser):
     def statement(self, p):
         exit()
 
-
-
     @_('expr')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
+        try:
+            if p.expr[0] in ['nop']:
+                pass
+            else:
+                self.ans = self.eval_tree(('tree', p.expr))
+                print(f"{tab}{self.pprint_num(self.ans)}")
 
-        if p.expr[0] in ['nop']:
-            pass
-        else:
-            self.ans = self.eval_tree(('tree', p.expr))
-            print(f"{tab}{self.pprint_num(self.ans)}")
-
-        # return self.eval_tree(('tree',p.expr))
-        return p.expr
-
+            # return self.eval_tree(('tree',p.expr))
+            return p.expr
+        except:
+            print(colored(p.expr, 'yellow'))
 
     # ben=14, a=b=c=3, no return value, this isnt an expression!
     @_('ids_assign expr')
@@ -347,7 +346,18 @@ class NParser(Parser):
         else:
             print(tab + colored('No initialized variables', 'white', attrs=['bold']))
 
+    # list
+    @_('ID LBRACE RBRACE')
+    def statement(self, p):
+        p = []
+        print("This is a list", p)
+        return p
 
+    @_('ID LBRACE expr RBRACE')
+    def statement(self, p):
+        l = [p.expr[1]]
+        print("List with elements", l)
+        return l
 
         ### EXPR ###
 
@@ -355,11 +365,14 @@ class NParser(Parser):
 
     @_('expr EQUALS expr')
     def expr(self, p):
-        return (p[0] == p[2])
+        return p[0] == p[2]
 
-    @_('IF expr')
+    @_('IF LPAREN expr RPAREN')
     def expr(self, p):
-        pass
+        if p.expr:
+            return True
+        else:
+            return False
 
     @_('expr PLUS expr',
        'expr MINUS expr',
